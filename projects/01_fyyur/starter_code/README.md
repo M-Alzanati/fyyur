@@ -183,9 +183,9 @@ Navigate to project homepage [http://127.0.0.1:5000/](http://127.0.0.1:5000/) or
 
 7. **Solve package dependencies error**
 ```
-pip install --upgrade babel
-pip install --upgrade python-dateutil
-pip install --upgrade flask-moment
-pip install --upgrade flask-wtf
-pip install --upgrade flask_sqlalchemy
+pip3 install --upgrade babel
+pip3 install --upgrade python-dateutil
+pip3 install --upgrade flask-moment
+pip3 install --upgrade flask-wtf
+pip3 install --upgrade flask_sqlalchemy
 ```
