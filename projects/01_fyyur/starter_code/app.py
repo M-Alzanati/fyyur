@@ -35,6 +35,7 @@ migrate = Migrate(app, db)
 # Filters.
 #----------------------------------------------------------------------------#
 
+
 def format_datetime(value, format='medium'):
     date = dateutil.parser.parse(value)
     if format == 'full':
@@ -57,6 +58,7 @@ def index():
 
 #  Venues
 #  ----------------------------------------------------------------
+
 
 @app.route('/venues')
 def venues():
@@ -83,13 +85,16 @@ def search_venues():
     response = {}
     venues = []
     search_term = request.form.get('search_term', '').lower()
-    search_result = Venue.query.filter(Venue.name.ilike(f'%{search_term}%')).all()
+    search_result = Venue.query.filter(
+        Venue.name.ilike(f'%{search_term}%')).all()
 
     for venue in search_result:
+        venue_shows_count = Show.query.join(Venue).filter(Venue.id == venue.id).count()
+
         venues.append({
             'id': venue.id,
             'name': venue.name,
-            'num_upcoming_shows': venue.shows.filter(Show.start_time > date.today()).count()
+            'num_upcoming_shows': venue_shows_count
         })
 
     response['count'] = len(search_result)
@@ -101,11 +106,14 @@ def search_venues():
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
     # shows the venue page with the given venue_id
-    venue = Venue.query.filter_by(id=venue_id).first()
     past_shows = []
     upcoming_shows = []
 
-    for show in venue.shows.filter(Show.start_time < date.today()).all():
+    venue = Venue.query.filter_by(id=venue_id).first()
+    venue_shows = Show.query.join(Venue).filter(Venue.id == venue_id).all()
+    print ('Venue shows: ', venue_shows)
+
+    for show in filter(lambda show: show.start_time.date() < date.today(), venue_shows):
         artist = Artist.query.filter_by(id=show.artist_id).first()
         past_shows.append({
             'artist_id': artist.id,
@@ -114,7 +122,7 @@ def show_venue(venue_id):
             'start_time': str(show.start_time)
         })
 
-    for show in venue.shows.filter(Show.start_time > date.today()).all():
+    for show in filter(lambda show: show.start_time.date() > date.today(), venue_shows):
         artist = Artist.query.filter_by(id=show.artist_id).first()
         upcoming_shows.append({
             'artist_id': artist.id,
@@ -227,13 +235,16 @@ def search_artists():
     response = {}
     artists = []
     search_term = request.form.get('search_term', '').lower()
-    search_result = Artist.query.filter(Artist.name.ilike(f'%{search_term}%')).all()
+    search_result = Artist.query.filter(
+        Artist.name.ilike(f'%{search_term}%')).all()
 
     for artist in search_result:
+        artist_shows_count = Show.query.join(Artist).filter(Artist.id == artist.id).count()
+
         artists.append({
             'id': artist.id,
             'name': artist.name,
-            'num_upcoming_shows': artist.shows.filter(Show.start_time > date.today()).count()
+            'num_upcoming_shows': artist_shows_count
         })
 
     response['count'] = len(search_result)
@@ -247,10 +258,11 @@ def show_artist(artist_id):
     # shows the artist page with the given artist_id
 
     artist = Artist.query.filter_by(id=artist_id).first()
+    artist_shows = Show.query.join(Artist).filter(Artist.id == artist_id).all()
     past_shows = []
     upcoming_shows = []
 
-    for show in artist.shows.filter(Show.start_time < date.today()).all():
+    for show in filter(lambda show: show.start_time.date() < date.today(), artist_shows):
         venue = Venue.query.filter_by(id=show.venue_id).first()
         past_shows.append({
             'venue_id': venue.id,
@@ -259,7 +271,7 @@ def show_artist(artist_id):
             'start_time': str(show.start_time)
         })
 
-    for show in artist.shows.filter(Show.start_time > date.today()).all():
+    for show in filter(lambda show: show.start_time.date() > date.today(), artist_shows):
         venue = Venue.query.filter_by(id=show.venue_id).first()
         upcoming_shows.append({
             'venue_id': venue.id,
