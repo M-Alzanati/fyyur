@@ -14,7 +14,6 @@ from forms import *
 from datetime import date
 from models import Venue, Artist, Show, db
 
-
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -58,7 +57,6 @@ def index():
 
 #  Venues
 #  ----------------------------------------------------------------
-
 
 @app.route('/venues')
 def venues():
@@ -160,6 +158,11 @@ def create_venue_form():
 def create_venue_submission():
     form = request.form
     error = False
+    my_form = VenueForm()
+    if not my_form.validate_on_submit():
+        print('Validation error: ', my_form.errors)
+        flash(my_form.errors)
+        return render_template('forms/new_venue.html', form=my_form)
     try:
         db.session.add(
             Venue(
@@ -299,6 +302,13 @@ def edit_artist(artist_id):
 def edit_artist_submission(artist_id):
     form = request.form
     error = False
+
+    my_form = ArtistForm()
+    if not my_form.validate_on_submit():
+        print('Validation error: ', my_form.errors)
+        flash(my_form.errors)
+        return redirect(url_for('edit_artist', artist_id=artist_id))
+
     try:
         artist = Artist.query.filter_by(id=artist_id).first()
         artist.name = form['name']
@@ -339,6 +349,13 @@ def edit_venue(venue_id):
 def edit_venue_submission(venue_id):
     form = request.form
     error = False
+
+    my_form = VenueForm()
+    if not my_form.validate_on_submit():
+        print('Validation error: ', my_form.errors)
+        flash(my_form.errors)
+        return redirect(url_for('edit_venue', venue_id=venue_id))
+
     try:
         venue = Venue.query.filter_by(id=venue_id).first()
         venue.name = form['name']
@@ -382,6 +399,11 @@ def create_artist_form():
 def create_artist_submission():
     form = request.form
     error = False
+    my_form = ArtistForm()
+    if not my_form.validate_on_submit():
+        print('Validation error: ', my_form.errors)
+        flash(my_form.errors)
+        return render_template('forms/new_artist.html', form=my_form)
     try:
         db.session.add(
             Artist(
@@ -411,6 +433,7 @@ def create_artist_submission():
         else:
             flash('Artist ' + form['name'] + ' was successfully listed!')
             return render_template('pages/home.html')
+
 
 #  Shows
 #  ----------------------------------------------------------------
